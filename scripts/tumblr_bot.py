@@ -33,17 +33,19 @@ client = TumblrRestClient(
 BLOG_NAME = "trevorion.tumblr.com"
 
 # === Helpers ===
+import datetime
+
 def load_memory():
     if os.path.exists(MEMORY_FILE):
         with open(MEMORY_FILE, "r") as f:
             return json.load(f)
     return []
 
-def save_memory(seen_urls):
+def save_memory(memory_records):
     os.makedirs(os.path.dirname(MEMORY_FILE), exist_ok=True)
     with open(MEMORY_FILE, "w") as f:
-        json.dump(sorted(set(seen_urls)), f, indent=2)
-    print(f"💾 Memory saved to {MEMORY_FILE} with {len(seen_urls)} entries.")
+        json.dump(memory_records, f, indent=2)
+    print(f"💾 Memory saved to {MEMORY_FILE} with {len(memory_records)} entries.")
 
 def extract_links_from_section(soup, section_name):
     results = []
