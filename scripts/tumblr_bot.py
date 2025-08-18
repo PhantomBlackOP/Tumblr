@@ -57,13 +57,24 @@ def load_memory():
         print(f"🔐 Renamed corrupted file to {backup_path}")
         return []
 
-    # Upgrade old format if needed
+    # Upgrade legacy string-only format
     if isinstance(data, list) and all(isinstance(x, str) for x in data):
         print("🔄 Upgrading legacy memory format...")
         return [{"url": x, "section": "unknown", "label": "", "posted_at": None} for x in data]
 
+    # Accept modern format, but sanitize
     if isinstance(data, list) and all(isinstance(x, dict) and "url" in x for x in data):
-        return data
+        cleaned = []
+        for x in data:
+            if not x.get("url"):
+                continue
+            cleaned.append({
+                "url": x["url"],
+                "section": x.get("section", "unknown"),
+                "label": x.get("label", ""),
+                "posted_at": x.get("posted_at", None)
+            })
+        return cleaned
 
     print(f"⚠️ Unrecognized memory format. Backing up and starting fresh.")
     backup_path = MEMORY_FILE + ".unrecognized_backup"
