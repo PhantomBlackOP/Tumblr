@@ -178,13 +178,13 @@ for section_key, label, url in new_links:
                 print(f"   Response: {response}")
             else:
                 print(f"📝 Text posted: {label} → {url}")
-            post_count += 1
-            memory_records.append({
-                "url": url,
-                "section": section_key,
-                "label": label,
-                "posted_at": now
-            })
+                post_count += 1
+                memory_records.append({
+                    "url": url,
+                    "section": section_key,
+                    "label": label,
+                    "posted_at": now
+                })
         except Exception as e:
             print(f"❌ Failed to post {url}: {e}")
 
