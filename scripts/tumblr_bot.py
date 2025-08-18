@@ -166,12 +166,13 @@ for section_key, label, url in new_links:
         })
     else:
         try:
-            response = client.create_text(
-                    BLOG_NAME,
-                    state="published",
-                    title=label,
-                    body=url,
-                    tags=tumblr_tags
+            response = client.create_link(
+                BLOG_NAME,
+                state="published",
+                title=label,
+                url=url,
+                description="",  # Optional: leave blank for clean embed
+                tags=tumblr_tags
             )
             if not response or "id" not in response:
                 print(f"❌ Tumblr failed to post: {label} → {url}")
