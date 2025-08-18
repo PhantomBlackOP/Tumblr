@@ -10,7 +10,7 @@ import datetime
 RSS_URL = "https://rss.trevorion.io/full-feed.xml"
 MEMORY_FILE = "scripts/memory.json"
 MAX_POSTS = 5  # Set to None to disable cap
-DRY_RUN = True
+DRY_RUN = False
 CATEGORIES = {
     "Dailies": "daily",
     "Fun": "papapun",
