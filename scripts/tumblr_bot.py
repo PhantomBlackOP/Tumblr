@@ -8,7 +8,7 @@ from pytumblr import TumblrRestClient
 # === Config ===
 RSS_URL = "https://rss.trevorion.io/full-feed.xml"
 MEMORY_FILE = "scripts/memory.json"
-DRY_RUN = False  # Change to True to disable posting
+DRY_RUN = True  # Change to True to disable posting
 CATEGORIES = {
     "Dailies": "daily",
     "Fun": "papapun",
