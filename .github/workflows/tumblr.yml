@@ -1,15 +1,20 @@
-name: Post to Tumblr
+name: Tumblr Auto Poster
 
 on:
   schedule:
-    - cron: "0 7 * * *"  # Runs daily at 09:00 CET (07:00 UTC)
+    - cron: "0 7 * * *"  # Runs at 09:00 CET (07:00 UTC)
   workflow_dispatch:
 
+permissions:
+  contents: write  # Required to push memory.json back
+
 jobs:
-  tumblr-post:
+  post-to-tumblr:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,19 +34,11 @@ jobs:
         run: |
           python scripts/tumblr_bot.py
 
-      - name: Show memory file contents
-        run: |
-          echo "====== memory.json ======"
-          cat scripts/memory.json || echo "🚫 No memory.json found"
-          echo "========================="
-
-      - name: Commit memory.json
+      - name: Commit memory.json back to repo
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git pull origin main
           git add scripts/memory.json
           git commit -m "Update memory.json [bot]" || echo "No changes to commit"
-          git push origin main || echo "Push failed or not needed"
-
-
+          git push origin main || echo "No push needed or failed"
