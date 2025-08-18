@@ -27,16 +27,22 @@ def save_memory(posted):
 
 def extract_links_from_section(soup, section_name):
     results = []
-    strong_tags = soup.find_all("strong")
-    for tag in strong_tags:
-        if tag.text.strip() == section_name:
+    print(f"🔍 Looking for section: {section_name}")
+    for tag in soup.find_all("strong"):
+        tag_text = tag.text.strip()
+        print(f" → Found <strong>: '{tag_text}'")
+        if tag_text == section_name:
             ul = tag.find_next("ul")
             if ul:
                 for li in ul.find_all("li"):
-                    text = li.get_text(strip=True)
                     a = li.find("a")
                     if a and a.get("href", "").startswith("http"):
-                        results.append((text, a["href"]))
+                        print(f"   ✅ Found link: {a['href']}")
+                        results.append((li.get_text(strip=True), a["href"]))
+                    else:
+                        print("   ⚠️ No valid <a> tag in <li>")
+            else:
+                print("   ⚠️ No <ul> after this <strong>")
             break
     return results
 
