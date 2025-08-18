@@ -8,12 +8,18 @@ from pytumblr import TumblrRestClient
 # === Config ===
 RSS_URL = "https://rss.trevorion.io/full-feed.xml"
 MEMORY_FILE = "scripts/memory.json"
-DRY_RUN = True  # Change to True to disable posting
+DRY_RUN = True
 CATEGORIES = {
     "Dailies": "daily",
     "Fun": "papapun",
     "News": "news",
     "Article": "article"
+}
+EMOJIS = {
+    "daily": "🎨",
+    "papapun": "😂",
+    "news": "🗞️",
+    "article": "🧠"
 }
 
 # === Tumblr Auth ===
@@ -24,7 +30,7 @@ client = TumblrRestClient(
     os.getenv("TUMBLR_OAUTH_TOKEN_SECRET")
 )
 
-BLOG_NAME = "trevorion.tumblr.com"  # Change if different
+BLOG_NAME = "trevorion.tumblr.com"
 
 # === Helpers ===
 def load_memory():
@@ -43,9 +49,7 @@ def extract_links_from_section(soup, section_name):
     results = []
     print(f"\n🔍 Looking for section: {section_name}")
     for tag in soup.find_all("strong"):
-        tag_text = tag.text.strip()
-        print(f" → Found <strong>: '{tag_text}'")
-        if tag_text == section_name + ":":
+        if tag.text.strip() == section_name + ":":
             ul = tag.parent.find_next_sibling("ul")
             if ul:
                 for li in ul.find_all("li"):
@@ -53,12 +57,12 @@ def extract_links_from_section(soup, section_name):
                     if a and a.get("href", "").startswith("http"):
                         print(f"   ✅ Found link: {a['href']}")
                         results.append((li.get_text(strip=True), a["href"]))
-                    else:
-                        print("   ⚠️ No valid <a> tag in <li>")
-            else:
-                print("   ⚠️ No <ul> after this <strong>")
             break
     return results
+
+def tumblr_caption(section_key, label, url):
+    emoji = EMOJIS.get(section_key, "🔗")
+    return f"{emoji} {label}<br>{url}"
 
 # === Main ===
 feed = feedparser.parse(RSS_URL)
@@ -72,7 +76,6 @@ for entry in feed.entries:
     for section, section_key in CATEGORIES.items():
         extracted = extract_links_from_section(soup, section)
         for label, tweet_url in extracted:
-            print(f"🧪 Raw extracted: {tweet_url}")
             if tweet_url not in seen_urls:
                 new_links.append((section_key, label, tweet_url))
             else:
@@ -89,6 +92,7 @@ for section_key, label, url in new_links:
     }.get(section_key, "[?]")
     print(f"{prefix} {label} → {url}")
 
+# === Posting ===
 if DRY_RUN:
     print("\n✅ DRY RUN COMPLETE. No posts made.")
 else:
@@ -99,13 +103,13 @@ else:
                 client.create_photo(BLOG_NAME, state="published", source=url, tags=[section_key])
                 print(f"📸 Photo posted: {url}")
             else:
-                client.create_text(BLOG_NAME, state="published", title=label, body=url, tags=[section_key])
+                caption = tumblr_caption(section_key, label, url)
+                client.create_text(BLOG_NAME, state="published", title=label, body=caption, tags=[section_key])
                 print(f"📝 Text posted: {label} → {url}")
         except Exception as e:
             print(f"❌ Failed to post {url}: {e}")
 
 # === Save Memory ===
 seen_urls += [url for _, _, url in new_links]
-seen_urls = list(set(seen_urls))
 save_memory(seen_urls)
 print("🧠 Saving tweet links to memory...")
