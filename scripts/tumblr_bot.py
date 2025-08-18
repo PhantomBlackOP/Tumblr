@@ -166,31 +166,18 @@ for section_key, label, url in new_links:
         })
     else:
         try:
-            if section_key in ["daily", "papapun"]:
-                response = client.create_photo(
-                    BLOG_NAME,
-                    state="published",
-                    source=url,
-                    tags=tumblr_tags
-                )
-                if not response or "id" not in response:
-                    print(f"❌ Tumblr failed to post: {label} → {url}")
-                    print(f"   Response: {response}")
-                else:
-                    print(f"📸 Photo posted: {label} → {url}")
-            else:
-                response = client.create_text(
+            response = client.create_text(
                     BLOG_NAME,
                     state="published",
                     title=label,
                     body=url,
                     tags=tumblr_tags
-                )
-                if not response or "id" not in response:
-                    print(f"❌ Tumblr failed to post: {label} → {url}")
-                    print(f"   Response: {response}")
-                else:
-                    print(f"📝 Text posted: {label} → {url}")
+            )
+            if not response or "id" not in response:
+                print(f"❌ Tumblr failed to post: {label} → {url}")
+                print(f"   Response: {response}")
+            else:
+                print(f"📝 Text posted: {label} → {url}")
             post_count += 1
             memory_records.append({
                 "url": url,
