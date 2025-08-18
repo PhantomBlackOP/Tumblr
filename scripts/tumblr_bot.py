@@ -42,9 +42,32 @@ BLOG_NAME = "trevorion.tumblr.com"
 
 # === Helpers ===
 def load_memory():
-    if os.path.exists(MEMORY_FILE):
+    if not os.path.exists(MEMORY_FILE):
+        print("📂 No memory file found. Starting fresh.")
+        return []
+
+    try:
         with open(MEMORY_FILE, "r") as f:
-            return json.load(f)
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"❌ Corrupted memory file: {MEMORY_FILE}")
+        print(f"   {e}")
+        backup_path = MEMORY_FILE + ".corrupt_backup"
+        os.rename(MEMORY_FILE, backup_path)
+        print(f"🔐 Renamed corrupted file to {backup_path}")
+        return []
+
+    # Upgrade old format if needed
+    if isinstance(data, list) and all(isinstance(x, str) for x in data):
+        print("🔄 Upgrading legacy memory format...")
+        return [{"url": x, "section": "unknown", "label": "", "posted_at": None} for x in data]
+
+    if isinstance(data, list) and all(isinstance(x, dict) and "url" in x for x in data):
+        return data
+
+    print(f"⚠️ Unrecognized memory format. Backing up and starting fresh.")
+    backup_path = MEMORY_FILE + ".unrecognized_backup"
+    os.rename(MEMORY_FILE, backup_path)
     return []
 
 def save_memory(memory_records):
