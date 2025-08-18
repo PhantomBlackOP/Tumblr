@@ -1,30 +1,30 @@
-name: Tumblr Auto Poster
+name: Post to Tumblr
 
 on:
-  workflow_dispatch:  # Manually run from GitHub
   schedule:
-    - cron: "0 8 * * *"  # Runs daily at 8:00 UTC (10:00 Italy time)
+    - cron: "0 7 * * *"  # Runs daily at 09:00 CET (07:00 UTC)
+  workflow_dispatch:
 
 jobs:
-  post_to_tumblr:
+  tumblr-post:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.x
+          python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install feedparser requests-oauthlib beautifulsoup4
+        run: |
+          pip install -r requirements.txt
 
-      - name: Run Tumblr bot
+      - name: Run Tumblr Bot
         env:
           TUMBLR_CONSUMER_KEY: ${{ secrets.TUMBLR_CONSUMER_KEY }}
           TUMBLR_CONSUMER_SECRET: ${{ secrets.TUMBLR_CONSUMER_SECRET }}
           TUMBLR_OAUTH_TOKEN: ${{ secrets.TUMBLR_OAUTH_TOKEN }}
           TUMBLR_OAUTH_TOKEN_SECRET: ${{ secrets.TUMBLR_OAUTH_TOKEN_SECRET }}
-        run: python scripts/tumblr_bot.py
+        run: |
+          python scripts/tumblr_bot.py
