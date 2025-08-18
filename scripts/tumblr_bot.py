@@ -139,7 +139,7 @@ post_count = 0
 now = datetime.datetime.utcnow().isoformat() + "Z"
 
 for section_key, label, url in new_links:
-    if MAX_POSTS and post_count >= MAX_POSTS:
+    if MAX_POSTS is not None and post_count >= MAX_POSTS:
         print(f"\n🔐 MAX_POSTS limit of {MAX_POSTS} reached.")
         break
 
@@ -188,4 +188,5 @@ for section_key, label, url in new_links:
             print(f"❌ Failed to post {url}: {e}")
 
 save_memory(memory_records)
-print("🧠 Saving tweet links to memory...")
+print(f"🧠 Saving tweet links to memory...")
+print(f"🧠 Total records: {len(memory_records)}, New: {len(new_links)}, Posted: {post_count}")
