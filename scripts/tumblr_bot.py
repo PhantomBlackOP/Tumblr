@@ -8,6 +8,7 @@ from pytumblr import TumblrRestClient
 # === Config ===
 RSS_URL = "https://rss.trevorion.io/full-feed.xml"
 MEMORY_FILE = "scripts/memory.json"
+MAX_POSTS = 5  # Set to None to disable cap
 DRY_RUN = True
 CATEGORIES = {
     "Dailies": "daily",
@@ -20,6 +21,12 @@ EMOJIS = {
     "papapun": "😂",
     "news": "🗞️",
     "article": "🧠"
+}
+TAG_MAP = {
+    "daily": ["AnimeAI", "AIart", "Dailies"],
+    "papapun": ["PapaPun", "DadJokes", "AnimeHumor"],
+    "news": ["AInews", "AnimeIndustry"],
+    "article": ["AIwriting", "AnimeAnalysis", "Trevorion"]
 }
 
 # === Tumblr Auth ===
@@ -68,7 +75,8 @@ def tumblr_caption(section_key, label, url):
 
 # === Main ===
 feed = feedparser.parse(RSS_URL)
-seen_urls = load_memory()
+seen_urls = [item["url"] for item in load_memory()]
+memory_records = load_memory()
 new_links = []
 
 for entry in feed.entries:
@@ -94,24 +102,67 @@ for section_key, label, url in new_links:
     }.get(section_key, "[?]")
     print(f"{prefix} {label} → {url}")
 
-# === Posting ===
-if DRY_RUN:
-    print("\n✅ DRY RUN COMPLETE. No posts made.")
-else:
-    print("\n🚀 Posting to Tumblr...")
-    for section_key, label, url in new_links:
+post_count = 0
+now = datetime.datetime.utcnow().isoformat() + "Z"
+
+for section_key, label, url in new_links:
+    if MAX_POSTS and post_count >= MAX_POSTS:
+        print(f"\n🔐 MAX_POSTS limit of {MAX_POSTS} reached.")
+        break
+
+    # Fallback to alt text if label is missing
+    if not label or len(label.strip()) < 3:
+        label = "Untitled Post"
+        print(f"⚠️ Empty or short label for {url} — using fallback.")
+
+    tags = TAG_MAP.get(section_key, [section_key])
+    tumblr_tags = [f"#{tag}" for tag in tags]
+
+    if DRY_RUN:
+        print(f"💤 DRY RUN: Would post [{section_key}] {label} → {url}")
+        memory_records.append({
+            "url": url,
+            "section": section_key,
+            "label": label,
+            "posted_at": None
+        })
+    else:
         try:
             if section_key in ["daily", "papapun"]:
-                client.create_photo(BLOG_NAME, state="published", source=url, tags=[section_key])
-                print(f"📸 Photo posted: {url}")
+                client.create_photo(
+                    BLOG_NAME,
+                    state="published",
+                    source=url,
+                    tags=tumblr_tags
+                )
+                print(f"📸 Photo posted: {label} → {url}")
             else:
-                caption = tumblr_caption(section_key, label, url)
-                client.create_text(BLOG_NAME, state="published", title=label, body=caption, tags=[section_key])
+                client.create_text(
+                    BLOG_NAME,
+                    state="published",
+                    title=label,
+                    body=url,
+                    tags=tumblr_tags
+                )
                 print(f"📝 Text posted: {label} → {url}")
+            post_count += 1
+            memory_records.append({
+                "url": url,
+                "section": section_key,
+                "label": label,
+                "posted_at": now
+            })
         except Exception as e:
             print(f"❌ Failed to post {url}: {e}")
 
 # === Save Memory ===
-seen_urls += [url for _, _, url in new_links]
-save_memory(seen_urls)
+now = datetime.datetime.utcnow().isoformat() + "Z"
+for section_key, label, url in new_links:
+    memory_records.append({
+        "url": url,
+        "section": section_key,
+        "label": label,
+        "posted_at": now
+    })
+save_memory(memory_records)
 print("🧠 Saving tweet links to memory...")
