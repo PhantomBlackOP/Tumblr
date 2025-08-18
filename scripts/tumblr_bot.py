@@ -4,6 +4,7 @@ import html
 import json
 import os
 from pytumblr import TumblrRestClient
+import datetime
 
 # === Config ===
 RSS_URL = "https://rss.trevorion.io/full-feed.xml"
@@ -19,7 +20,7 @@ CATEGORIES = {
 EMOJIS = {
     "daily": "🎨",
     "papapun": "😂",
-    "news": "🗞️",
+    "news": "🚖️",
     "article": "🧠"
 }
 TAG_MAP = {
@@ -40,8 +41,6 @@ client = TumblrRestClient(
 BLOG_NAME = "trevorion.tumblr.com"
 
 # === Helpers ===
-import datetime
-
 def load_memory():
     if os.path.exists(MEMORY_FILE):
         with open(MEMORY_FILE, "r") as f:
@@ -75,8 +74,8 @@ def tumblr_caption(section_key, label, url):
 
 # === Main ===
 feed = feedparser.parse(RSS_URL)
-seen_urls = [item["url"] for item in load_memory()]
 memory_records = load_memory()
+seen_urls = [item["url"] for item in memory_records]
 new_links = []
 
 for entry in feed.entries:
@@ -110,7 +109,6 @@ for section_key, label, url in new_links:
         print(f"\n🔐 MAX_POSTS limit of {MAX_POSTS} reached.")
         break
 
-    # Fallback to alt text if label is missing
     if not label or len(label.strip()) < 3:
         label = "Untitled Post"
         print(f"⚠️ Empty or short label for {url} — using fallback.")
@@ -119,7 +117,7 @@ for section_key, label, url in new_links:
     tumblr_tags = [f"#{tag}" for tag in tags]
 
     if DRY_RUN:
-        print(f"💤 DRY RUN: Would post [{section_key}] {label} → {url}")
+        print(f"🥯 DRY RUN: Would post [{section_key}] {label} → {url}")
         memory_records.append({
             "url": url,
             "section": section_key,
@@ -155,14 +153,5 @@ for section_key, label, url in new_links:
         except Exception as e:
             print(f"❌ Failed to post {url}: {e}")
 
-# === Save Memory ===
-now = datetime.datetime.utcnow().isoformat() + "Z"
-for section_key, label, url in new_links:
-    memory_records.append({
-        "url": url,
-        "section": section_key,
-        "label": label,
-        "posted_at": now
-    })
 save_memory(memory_records)
 print("🧠 Saving tweet links to memory...")
