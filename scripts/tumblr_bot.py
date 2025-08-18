@@ -1,4 +1,5 @@
 import feedparser
+import html
 import json
 import os
 from bs4 import BeautifulSoup
@@ -45,7 +46,8 @@ def run():
     to_post = []
 
     for entry in feed.entries:
-        soup = BeautifulSoup(entry.summary, "html.parser")
+        decoded = html.unescape(entry.summary)
+        soup = BeautifulSoup(decoded, "html.parser")
 
         for label, kind in CATEGORIES.items():
             items = extract_links_from_section(soup, label)
