@@ -3,17 +3,28 @@ from bs4 import BeautifulSoup
 import html
 import json
 import os
+from pytumblr import TumblrRestClient
 
 # === Config ===
 RSS_URL = "https://rss.trevorion.io/full-feed.xml"
 MEMORY_FILE = "scripts/memory.json"
-DRY_RUN = True  # Change to False to post for real
+DRY_RUN = False  # Change to True to disable posting
 CATEGORIES = {
     "Dailies": "daily",
     "Fun": "papapun",
     "News": "news",
     "Article": "article"
 }
+
+# === Tumblr Auth ===
+client = TumblrRestClient(
+    os.getenv("TUMBLR_CONSUMER_KEY"),
+    os.getenv("TUMBLR_CONSUMER_SECRET"),
+    os.getenv("TUMBLR_OAUTH_TOKEN"),
+    os.getenv("TUMBLR_OAUTH_TOKEN_SECRET")
+)
+
+BLOG_NAME = "trevorion.tumblr.com"  # Change if different
 
 # === Helpers ===
 def load_memory():
@@ -81,10 +92,15 @@ if DRY_RUN:
 else:
     print("\n🚀 Posting to Tumblr...")
     for section_key, label, url in new_links:
-        # Replace this with actual Tumblr API call
-        print(f"📤 Posting: {label} → {url}")
-        # Example:
-        # tumblr.create_text_post(...)
+        try:
+            if section_key in ["daily", "papapun"]:
+                client.create_photo(BLOG_NAME, state="published", source=url, tags=[section_key])
+                print(f"📸 Photo posted: {url}")
+            else:
+                client.create_text(BLOG_NAME, state="published", title=label, body=url, tags=[section_key])
+                print(f"📝 Text posted: {label} → {url}")
+        except Exception as e:
+            print(f"❌ Failed to post {url}: {e}")
 
 # === Save Memory ===
 seen_urls += [url for _, _, url in new_links]
