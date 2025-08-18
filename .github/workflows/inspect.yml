@@ -1,0 +1,23 @@
+name: Inspect RSS Summary
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+
+    - name: Install dependencies
+      run: pip install feedparser beautifulsoup4
+
+    - name: Run inspection script
+      run: python scripts/inspect_summary.py
