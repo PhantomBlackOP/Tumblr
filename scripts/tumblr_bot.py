@@ -32,7 +32,7 @@ def extract_links_from_section(soup, section_name):
         tag_text = tag.text.strip()
         print(f" → Found <strong>: '{tag_text}'")
         if tag_text == section_name:
-            ul = tag.find_next("ul")
+            ul = tag.parent.find_next_sibling("ul")
             if ul:
                 for li in ul.find_all("li"):
                     a = li.find("a")
