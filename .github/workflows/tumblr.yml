@@ -38,7 +38,8 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git pull origin main
           git add scripts/memory.json
           git commit -m "Update memory.json [bot]" || echo "No changes to commit"
-          git push origin main || echo "No push needed or failed"
+          git pull --rebase origin main || echo "Rebase failed or not needed"
+          git push origin main || echo "Push failed or not needed"
+
