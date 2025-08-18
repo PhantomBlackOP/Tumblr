@@ -34,8 +34,10 @@ def load_memory():
     return []
 
 def save_memory(seen_urls):
+    os.makedirs(os.path.dirname(MEMORY_FILE), exist_ok=True)
     with open(MEMORY_FILE, "w") as f:
         json.dump(seen_urls, f, indent=2)
+    print(f"💾 Memory saved to {MEMORY_FILE} with {len(seen_urls)} entries.")
 
 def extract_links_from_section(soup, section_name):
     results = []
