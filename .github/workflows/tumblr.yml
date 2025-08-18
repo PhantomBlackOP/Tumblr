@@ -29,6 +29,12 @@ jobs:
         run: |
           python scripts/tumblr_bot.py
 
+      - name: Show memory file contents
+        run: |
+          echo "====== memory.json ======"
+          cat scripts/memory.json || echo "🚫 No memory.json found"
+          echo "========================="
+
       - name: Commit memory file
         run: |
           git config user.name "github-actions"
