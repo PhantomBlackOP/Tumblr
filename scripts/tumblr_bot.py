@@ -31,14 +31,20 @@ TAG_MAP = {
 }
 
 # === Tumblr Auth ===
+BLOG_NAME = "trevorion"
 client = TumblrRestClient(
     os.getenv("TUMBLR_CONSUMER_KEY"),
     os.getenv("TUMBLR_CONSUMER_SECRET"),
     os.getenv("TUMBLR_OAUTH_TOKEN"),
     os.getenv("TUMBLR_OAUTH_TOKEN_SECRET")
 )
-
-BLOG_NAME = "trevorion.tumblr.com"
+print("🔐 Tumblr client initialized. Blog name:", BLOG_NAME)
+print("🔍 Verifying blog access...")
+try:
+    info = client.blog_info(BLOG_NAME)
+    print("✅ Blog exists. Title:", info["blog"]["title"])
+except Exception as e:
+    print("❌ Tumblr auth failed:", e)
 
 # === Helpers ===
 def load_memory():
@@ -112,7 +118,7 @@ memory_records = load_memory()
 seen_urls = [item["url"] for item in memory_records]
 new_links = []
 
-for entry in feed.entries:
+for entry in reversed(feed.entries):
     decoded = html.unescape(entry.summary)
     soup = BeautifulSoup(decoded, "html.parser")
 
