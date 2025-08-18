@@ -47,6 +47,9 @@ def run():
 
     for entry in feed.entries:
         decoded = html.unescape(entry.summary)
+        print("\n=== DECODED SUMMARY SAMPLE ===\n")
+        print(decoded[:1500])
+        print("\n==============================\n")        
         soup = BeautifulSoup(decoded, "html.parser")
 
         for label, kind in CATEGORIES.items():
